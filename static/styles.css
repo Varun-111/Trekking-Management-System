@@ -1,0 +1,14 @@
+/* Custom Trekking App Styles */
+body {
+    background-color: #f4f7f6 !important;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-lg mt-5">
+            <div class="card-header bg-dark text-white text-center py-4 rounded-top">
+                <h3 class="font-weight-light my-2">🏕️ Welcome Back</h3>
+                <p class="small mb-0 text-muted">Login to access your TrekApp dashboard</p>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form action="/login" method="POST">
+                    
+                    <div class="form-floating mb-4">
+                        <input class="form-control" id="inputEmail" type="email" name="email" placeholder="name@example.com" required />
+                        <label for="inputEmail">Email address</label>
+                    </div>
+                    
+                    <div class="form-floating mb-4">
+                        <input class="form-control" id="inputPassword" type="password" name="password" placeholder="Password" required />
+                        <label for="inputPassword">Password</label>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" id="rememberPasswordCheck" type="checkbox" name="remember" value="true" />
+                        <label class="form-check-label text-muted" for="rememberPasswordCheck">Remember password</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4 mb-0">
+                        <button class="btn btn-primary btn-lg fw-bold" type="submit">Login</button>
+                    </div>
+                    
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 bg-light rounded-bottom">
+                <div class="small">
+                    <span class="text-muted">Don't have an account?</span> 
+                    <a href="/register" class="text-decoration-none fw-bold">Sign up!</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
