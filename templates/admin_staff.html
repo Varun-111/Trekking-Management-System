@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Trek Staff</h3>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm">
+        Back to Dashboard
+    </a>
+</div>
+
+<!-- Assign Staff to Trek Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        Assign Staff to a Trek
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin_staff_assign') }}" method="POST"
+              class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Select Staff</label>
+                <select name="staff_id" class="form-select" required>
+                    <option value="" disabled selected>Choose staff</option>
+                    {% for s in staff %}
+                    <option value="{{ s.id }}">{{ s.username }} ({{ s.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Select Trek</label>
+                <select name="trek_id" class="form-select" required>
+                    <option value="" disabled selected>Choose trek</option>
+                    {% for t in treks %}
+                    <option value="{{ t.id }}">{{ t.name }} — {{ t.location }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">Assign</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Staff Table -->
+{% if staff %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-bordered table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>{{ s.username }}</td>
+                    <td>{{ s.email }}</td>
+                    <td>{{ s.phone }}</td>
+                    <td>
+                        {% if s.is_blacklisted %}
+                        <span class="badge bg-danger">Blacklisted</span>
+                        {% else %}
+                        <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin_blacklist_staff', user_id=s.id) }}"
+                           class="btn btn-sm
+                           {% if s.is_blacklisted %}btn-success{% else %}btn-warning{% endif %}">
+                            {% if s.is_blacklisted %}Reactivate{% else %}Blacklist{% endif %}
+                        </a>
+                        <a href="{{ url_for('admin_staff_remove', user_id=s.id) }}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Remove this staff member?')">
+                            Remove
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">No approved staff members found.</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>All Treks</h3>
+    <div>
+        <a href="{{ url_for('admin_trek_add') }}" class="btn btn-success btn-sm me-2">
+            + Add Trek
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm">
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+
+{% if treks %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-bordered table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Difficulty</th>
+                    <th>Slots</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trek in treks %}
+                <tr>
+                    <td>{{ trek.id }}</td>
+                    <td>{{ trek.name }}</td>
+                    <td>{{ trek.location }}</td>
+                    <td>{{ trek.difficulty }}</td>
+                    <td>{{ trek.available_slots }} / {{ trek.total_seats }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if trek.status == 'Open' %} bg-success
+                            {% elif trek.status == 'Pending' %} bg-warning text-dark
+                            {% elif trek.status == 'Completed' %} bg-secondary
+                            {% elif trek.status == 'Cancelled' %} bg-danger
+                            {% else %} bg-info
+                            {% endif %}">
+                            {{ trek.status }}
+                        </span>
+                    </td>
+                    <td>{{ trek.start_date }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_trek_edit', trek_id=trek.id) }}"
+                           class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{{ url_for('admin_trek_delete', trek_id=trek.id) }}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure you want to delete this trek?')">
+                           Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">No treks found. Add one to get started.</div>
+{% endif %}
+
+{% endblock %}
