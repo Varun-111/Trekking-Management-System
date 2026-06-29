@@ -16,13 +16,40 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-success text-white ms-2" href="/register">Register</a>
-                        </li>
-                    </ul> 
+                        {% if session.get('user_id') %}
+                            <li class="nav-item">
+                                <span class="nav-link text-white">Hi, {{ session['user_name'] }}</span>
+                            </li>
+                            {% if session.get('role') == 'Admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                            </li>
+                            {% elif session.get('role') == 'Trek Staff' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('staff_dashboard') }}">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>
+                            </li>
+                            {% elif session.get('role') == 'Trekker' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('trekker_dashboard') }}">Dashboard</a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-danger text-white ms-2"
+                                href="{{ url_for('logout') }}">Logout</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-success text-white ms-2"
+                                href="{{ url_for('register') }}">Register</a>
+                            </li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </nav>

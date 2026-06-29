@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>{{ trek.name }}</h3>
+    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-secondary btn-sm">
+        Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+
+    <!-- Trek Info + Update Form -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                Trek Details
+            </div>
+            <div class="card-body">
+                <p><strong>Location:</strong> {{ trek.location }}</p>
+                <p><strong>Difficulty:</strong> {{ trek.difficulty }}</p>
+                <p><strong>Duration:</strong> {{ trek.duration_days }} days</p>
+                <p><strong>Start Date:</strong> {{ trek.start_date }}</p>
+                <p><strong>End Date:</strong> {{ trek.end_date }}</p>
+                <p><strong>Price:</strong> ₹{{ trek.price }}</p>
+                <p>
+                    <strong>Status:</strong>
+                    <span class="badge
+                        {% if trek.status == 'Open' %}bg-success
+                        {% elif trek.status == 'Pending' %}bg-warning text-dark
+                        {% elif trek.status == 'Completed' %}bg-secondary
+                        {% elif trek.status == 'Closed' %}bg-danger
+                        {% else %}bg-info
+                        {% endif %}">
+                        {{ trek.status }}
+                    </span>
+                </p>
+                <p>
+                    <strong>Slots:</strong>
+                    {{ trek.available_slots }} / {{ trek.total_seats }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Update Form -->
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-header bg-dark text-white">
+                Update Trek
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('staff_trek_update', trek_id=trek.id) }}"
+                      method="POST">
+
+                    <div class="mb-3">
+                        <label class="form-label">Available Slots</label>
+                        <input type="number" name="available_slots"
+                               class="form-control"
+                               value="{{ trek.available_slots }}"
+                               min="0"
+                               max="{{ trek.total_seats }}"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Trek Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="Open"
+                                {% if trek.status == 'Open' %}selected{% endif %}>
+                                Open
+                            </option>
+                            <option value="Closed"
+                                {% if trek.status == 'Closed' %}selected{% endif %}>
+                                Closed
+                            </option>
+                            <option value="Completed"
+                                {% if trek.status == 'Completed' %}selected{% endif %}>
+                                Completed
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Update Trek
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registered Trekkers -->
+    <div class="col-md-7 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between">
+                <span>Registered Trekkers</span>
+                <span class="badge bg-primary">{{ bookings|length }}</span>
+            </div>
+            <div class="card-body">
+                {% if bookings %}
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Booked On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.user.id }}</td>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.user.phone }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    No trekkers have booked this trek yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

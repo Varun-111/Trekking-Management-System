@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import db, User, Trek, Booking, TrekStaff
 from dotenv import load_dotenv
-
+from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
@@ -12,12 +12,12 @@ app.config['SECRET_KEY'] = 'trekking_secret_key'
 
 db.init_app(app)
 
-# ─── Home ────────────────────────────────────────────
+# Home 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# ─── Login ───────────────────────────────────────────
+# Login 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -52,7 +52,7 @@ def login():
 
     return render_template('login.html')
 
-# ─── Register ────────────────────────────────────────
+# Register 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -97,7 +97,7 @@ def register():
     return render_template('register.html')
 
 
-# ─── Admin: View and Approve Pending Staff ────────────
+# Admin: View and Approve Pending Staff
 @app.route('/admin/pending-staff')
 def pending_staff():
     if session.get('role') != 'Admin':
@@ -129,14 +129,14 @@ def approve_staff(user_id):
     return redirect(url_for('pending_staff'))
 
 
-# ─── Logout ──────────────────────────────────────────
+# Logout 
 @app.route('/logout')
 def logout():
     session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-# ─── Dashboards (placeholder for now) ────────────────
+# Dashboards
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if session.get('role') != 'Admin':
@@ -181,8 +181,8 @@ def admin_trek_add():
         duration_days = request.form['duration_days']
         total_seats = request.form['total_seats']
         price = request.form['price']
-        start_date = request.form['start_date']
-        end_date = request.form['end_date']
+        start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d').date()
 
         new_trek = Trek(
             name=name,
@@ -227,8 +227,8 @@ def admin_trek_edit(trek_id):
         trek.total_seats = int(request.form['total_seats'])
         trek.available_slots = int(request.form['available_slots'])
         trek.price = float(request.form['price'])
-        trek.start_date = request.form['start_date']
-        trek.end_date = request.form['end_date']
+        trek.start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d').date()
+        trek.end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d').date()
         trek.status = request.form['status']
 
         db.session.commit()
@@ -264,7 +264,7 @@ def admin_staff():
     
     all_staff = User.query.filter_by(role='Trek Staff', is_approved=True).all()
     all_treks = Trek.query.all()
-    return render_template('admin_staff.html', staff=all_stuff, treks=all_treks)
+    return render_template('admin_staff.html', staff=all_staff, treks=all_treks)
 
 @app.route('/admin/staff/remove/<int:user_id>')
 def admin_staff_remove(user_id):
@@ -426,7 +426,116 @@ def staff_dashboard():
     if session.get('role') != 'Trek Staff':
         flash('Access denied.', 'danger')
         return redirect(url_for('login'))
-    return render_template('staff_dashboard.html')
+    
+    staff_id = session['user_id']
+
+    # Get all trek assignments for this staff
+    assignments = TrekStaff.query.filter_by(staff_id=staff_id).all()
+
+    # Build a list of treks with their booking counts
+    assigned_treks = []
+    for assignment in assignments:
+        trek = assignment.trek
+        booking_count = Booking.query.filter_by(
+            trek_id = trek.id,
+            status = 'Booked',
+        ).count()
+        assigned_treks.append({
+            'trek': trek,
+            'booking_count': booking_count
+        })
+    return render_template('staff_dashboard.html', assigned_treks=assigned_treks)
+
+
+# Staff: Trek Details
+@app.route('/staff/trek/<int:trek_id>')
+def staff_trek_detail(trek_id):
+    if session.get('role') != 'Trek Staff':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+    
+    # Make sure this staff is actually assigned to this trek
+    assignment = TrekStaff.query.filter_by(
+        staff_id=session['user_id'],
+        trek_id = trek_id
+    ).first()
+
+    if not assignment:
+        flash('You are not assigned to this trek.', 'danger')
+        return redirect(url_for('staff_dashboard'))
+
+    trek = Trek.query.get(trek_id)
+
+    # Get all bookings for this trek
+    bookings = Booking.query.filter_by(
+        trek_id=trek_id,
+        status = 'Booked'
+    ).all()
+
+    return render_template('staff_trek_detail.html',
+        trek=trek,
+        bookings=bookings
+    )
+
+# Staff: Update Trek
+@app.route('/staff/trek/<int:trek_id>/update', methods=['POST'])
+def staff_trek_update(trek_id):
+    if session.get('role') != 'Trek Staff':
+        flash('Access denied.', 'Danger')
+        return redirect(url_for('login'))
+    
+    # Verifying the assignment again
+    assignment = TrekStaff.query.filter_by(
+        staff_id = session['user_id'],
+        trek_id = trek_id
+    ).first()
+
+    if not assignment:
+        flash('You are not assigned to this trek.', 'danger')
+        return redirect(url_for('staff_dashboard'))
+
+    trek = Trek.query.get(trek_id)
+
+    # Update slots and status from form
+    trek.available_slots = int(request.form['available_slots'])
+    trek.status = request.form['status']
+
+    db.session.commit()
+    flash('Trek updated successfully.', 'success')
+
+    return redirect(url_for('staff_trek_detail', trek_id=trek_id))
+
+# Staff: Profile Update
+@app.route('/staff/profile', methods=['GET', 'POST'])
+def staff_profile():
+    if session.get('role') != 'Trek Staff':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    staff = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        username = request.form['username']
+        phone = request.form['phone']
+        new_password = request.form['new_password']
+
+        # Update name and phone
+        staff.username = username
+        staff.phone = phone
+
+        # Update password only if a new one was entered
+        if new_password:
+            staff.password_hash = generate_password_hash(new_password)
+        
+        db.session.commit()
+
+        # Update session name in case it changed
+        session['user_name'] = staff.username
+        
+        flash('Profile updated successfully.', 'success')
+        return redirect(url_for('staff_profile'))
+    
+    return render_template('staff_profile.html', staff=staff)
 
 @app.route('/trekker/dashboard')
 def trekker_dashboard():
