@@ -1,5 +1,91 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h2>Welcome, {{ session['user_name'] }} — Trekker Dashboard</h2>
-<p>Trekker features coming soon.</p>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Welcome, {{ session['user_name'] }}</h3>
+    <a href="{{ url_for('trekker_treks') }}" class="btn btn-primary btn-sm">
+        Browse All Treks
+    </a>
+</div>
+
+<!-- Active Bookings Summary -->
+<h5 class="mb-3">Your Active Bookings</h5>
+
+{% if active_bookings %}
+<div class="row mb-4">
+    {% for booking in active_bookings %}
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h6 class="card-title">{{ booking.trek.name }}</h6>
+                    <span class="badge bg-success">{{ booking.status }}</span>
+                </div>
+                <p class="text-muted mb-1">
+                    <strong>Location:</strong> {{ booking.trek.location }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Difficulty:</strong> {{ booking.trek.difficulty }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Dates:</strong>
+                    {{ booking.trek.start_date }} to {{ booking.trek.end_date }}
+                </p>
+                <p class="text-muted mb-0">
+                    <strong>Booked On:</strong> {{ booking.booking_date }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info mb-4">
+    You have no active bookings.
+    <a href="{{ url_for('trekker_treks') }}">Browse treks to book one.</a>
+</div>
+{% endif %}
+
+<!-- Available Treks -->
+<h5 class="mb-3">Available Treks</h5>
+
+{% if open_treks %}
+<div class="row">
+    {% for trek in open_treks %}
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="card-title">{{ trek.name }}</h6>
+                <p class="text-muted mb-1">
+                    <strong>Location:</strong> {{ trek.location }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Difficulty:</strong> {{ trek.difficulty }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Duration:</strong> {{ trek.duration_days }} days
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Price:</strong> ₹{{ trek.price }}
+                </p>
+                <p class="text-muted mb-2">
+                    <strong>Slots Left:</strong>
+                    <span class="badge bg-primary">{{ trek.available_slots }}</span>
+                </p>
+                <a href="{{ url_for('trekker_treks') }}"
+                   class="btn btn-outline-primary btn-sm">
+                    View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    No open treks available right now. Check back later.
+</div>
+{% endif %}
+
 {% endblock %}

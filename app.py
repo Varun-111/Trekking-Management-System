@@ -542,7 +542,130 @@ def trekker_dashboard():
     if session.get('role') != 'Trekker':
         flash('Access denied.', 'danger')
         return redirect(url_for('login'))
-    return render_template('trekker_dashboard.html')
+    
+    user_id = session['user_id']
+
+    # Active bookings
+    active_bookings = Booking.query.filter_by(user_id=user_id, status='Booked').all()
+
+    # Open treks to browse
+    open_treks = Trek.query.filter_by(status='Open').limit(6).all()
+
+    return render_template('trekker_dashboard.html', active_bookings=active_bookings, open_treks=open_treks)
+
+@app.route('/trekker/treks')
+def trekker_treks():
+    if session.get('role') != 'Trekker':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    difficulty = request.args.get('difficulty', '')
+    location = request.args.get('location', '')
+
+    query = Trek.query.filter_by(status='Open')
+
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+    if location:
+        query = query.filter(Trek.location.ilike(f'%{location}%'))
+    
+    treks = query.all()
+    return render_template('trekker_treks.html', treks=treks, difficulty=difficulty, location=location)
+
+@app.route('/trekker/book/<int:trek_id>', methods=['POST'])
+def trekker_book(trek_id):
+    if session.get('role') != 'Trekker':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    trek = Trek.query.get(trek_id)
+
+    if not trek or trek.status != 'Open':
+        flash('This trek is not open for booking.', 'danger')
+        return redirect(url_for('trekker_treks'))
+
+    if trek.available_slots <= 0:
+        flash('Sorry, this trek is full.', 'danger')
+        return redirect(url_for('trekker_treks'))
+
+    already_booked = Booking.query.filter_by(
+        user_id=user_id, trek_id=trek_id, status='Booked'
+    ).first()
+    if already_booked:
+        flash('You have already booked this trek.', 'warning')
+        return redirect(url_for('trekker_treks'))
+
+    new_booking = Booking(user_id=user_id, trek_id=trek_id, status='Booked')
+    trek.available_slots -= 1
+
+    db.session.add(new_booking)
+    db.session.commit()
+
+    flash('Trek booked successfully!', 'success')
+    return redirect(url_for('trekker_bookings'))
+
+# Cancel booking.
+@app.route('/trekker/cancel/<int:booking_id>', methods=['POST'])
+def trekker_cancel(booking_id):
+    if session.get('role') != 'Trekker':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    booking = Booking.query.get(booking_id)
+
+    # Make sure this booking belongs to the logged-in user
+    if not booking or booking.user_id != session['user_id']:
+        flash('Booking not found.', 'danger')
+        return redirect(url_for('trekker_bookings'))
+
+    if booking.status != 'Booked':
+        flash('This booking cannot be cancelled.', 'warning')
+        return redirect(url_for('trekker_bookings'))
+
+    booking.status = 'Cancelled'
+    booking.trek.available_slots += 1
+    db.session.commit()
+
+    flash('Booking cancelled successfully.', 'success')
+    return redirect(url_for('trekker_bookings'))
+
+# Booking history view
+@app.route('/trekker/bookings')
+def trekker_bookings():
+    if session.get('role') != 'Trekker':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    bookings = Booking.query.filter_by(user_id=user_id)\
+               .order_by(Booking.booking_date.desc()).all()
+
+    return render_template('trekker_bookings.html', bookings=bookings)
+
+# Trekker profile
+@app.route('/trekker/profile', methods=['GET', 'POST'])
+def trekker_profile():
+    if session.get('role') != 'Trekker':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    trekker = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        trekker.username = request.form['username']
+        trekker.phone = request.form['phone']
+        new_password = request.form['new_password']
+
+        if new_password:
+            trekker.password_hash = generate_password_hash(new_password)
+
+        db.session.commit()
+        session['user_name'] = trekker.username
+        flash('Profile updated successfully.', 'success')
+        return redirect(url_for('trekker_profile'))
+
+    return render_template('trekker_profile.html', trekker=trekker)
 
 if __name__ == '__main__':
     app.run(debug=True)

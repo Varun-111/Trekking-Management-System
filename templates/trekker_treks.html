@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Browse Treks</h3>
+    <a href="{{ url_for('trekker_dashboard') }}" class="btn btn-secondary btn-sm">
+        Back to Dashboard
+    </a>
+</div>
+
+<!-- Search and Filter Form -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('trekker_treks') }}" method="GET">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Difficulty</label>
+                    <select name="difficulty" class="form-select">
+                        <option value="">All Difficulties</option>
+                        <option value="Easy"
+                            {% if difficulty == 'Easy' %}selected{% endif %}>
+                            Easy
+                        </option>
+                        <option value="Moderate"
+                            {% if difficulty == 'Moderate' %}selected{% endif %}>
+                            Moderate
+                        </option>
+                        <option value="Hard"
+                            {% if difficulty == 'Hard' %}selected{% endif %}>
+                            Hard
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Filter by Location</label>
+                    <input type="text" name="location" class="form-control"
+                           placeholder="e.g. Himachal Pradesh"
+                           value="{{ location }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Filter
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <a href="{{ url_for('trekker_treks') }}"
+                       class="btn btn-outline-secondary w-100">
+                        Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Trek Listing -->
+{% if treks %}
+<div class="row">
+    {% for trek in treks %}
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title">{{ trek.name }}</h5>
+                    <span class="badge bg-success">{{ trek.status }}</span>
+                </div>
+
+                <p class="text-muted mb-1">
+                    <strong>Location:</strong> {{ trek.location }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Difficulty:</strong> {{ trek.difficulty }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Duration:</strong> {{ trek.duration_days }} days
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Price:</strong> ₹{{ trek.price }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Dates:</strong>
+                    {{ trek.start_date }} to {{ trek.end_date }}
+                </p>
+                <p class="text-muted mb-1">
+                    <strong>Description:</strong> {{ trek.description }}
+                </p>
+                <p class="text-muted mb-3">
+                    <strong>Slots Available:</strong>
+                    <span class="badge bg-primary">{{ trek.available_slots }}</span>
+                    / {{ trek.total_seats }}
+                </p>
+
+                {% if trek.available_slots > 0 %}
+                <form action="{{ url_for('trekker_book', trek_id=trek.id) }}"
+                      method="POST">
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        Book This Trek
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn btn-secondary btn-sm w-100" disabled>
+                    Trek Full
+                </button>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="alert alert-info">
+    No treks found matching your filters. 
+    <a href="{{ url_for('trekker_treks') }}">Clear filters</a> to see all treks.
+</div>
+{% endif %}
+
+{% endblock %}
