@@ -22,8 +22,9 @@
                     <th>Trek</th>
                     <th>Location</th>
                     <th>Dates</th>
+                    <th>Trek Status</th>
                     <th>Booked On</th>
-                    <th>Status</th>
+                    <th>Booking Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -34,9 +35,17 @@
                     <td>{{ booking.trek.name }}</td>
                     <td>{{ booking.trek.location }}</td>
                     <td>
-                        {{ booking.trek.start_date }}
-                        to
-                        {{ booking.trek.end_date }}
+                        {{ booking.trek.start_date }} to {{ booking.trek.end_date }}
+                    </td>
+                    <td>
+                        <span class="badge
+                            {% if booking.trek.status == 'Open' %}bg-success
+                            {% elif booking.trek.status == 'Completed' %}bg-secondary
+                            {% elif booking.trek.status == 'Closed' %}bg-danger
+                            {% else %}bg-warning text-dark
+                            {% endif %}">
+                            {{ booking.trek.status }}
+                        </span>
                     </td>
                     <td>{{ booking.booking_date }}</td>
                     <td>

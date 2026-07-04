@@ -40,65 +40,78 @@
     </div>
 </div>
 
-<!-- Quick Links -->
+<!-- Manage Section -->
 <h5 class="mb-3">Manage</h5>
 <div class="row">
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Treks</h6>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0 h-100"
+             style="border-left: 4px solid #0d6efd !important;">
+            <div class="card-body">
+                <h6 class="card-title fw-bold">Treks</h6>
+                <p class="text-muted small mb-3">
+                    Create, edit, and manage all treks.
+                </p>
                 <a href="{{ url_for('admin_treks') }}"
-                   class="btn btn-primary btn-sm mt-1">Manage Treks</a>
+                   class="btn btn-primary btn-sm">
+                    Manage Treks
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Staff</h6>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0 h-100"
+             style="border-left: 4px solid #198754 !important;">
+            <div class="card-body">
+                <h6 class="card-title fw-bold">Staff</h6>
+                <p class="text-muted small mb-3">
+                    Manage staff and assign them to treks.
+                </p>
                 <a href="{{ url_for('admin_staff') }}"
-                   class="btn btn-success btn-sm mt-1">Manage Staff</a>
+                   class="btn btn-success btn-sm me-2">
+                    Manage Staff
+                </a>
                 <a href="{{ url_for('pending_staff') }}"
-                   class="btn btn-warning btn-sm mt-1">Pending Approvals</a>
+                   class="btn btn-warning btn-sm">
+                    Pending Approvals
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Users</h6>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0 h-100"
+             style="border-left: 4px solid #0dcaf0 !important;">
+            <div class="card-body">
+                <h6 class="card-title fw-bold">Users</h6>
+                <p class="text-muted small mb-3">
+                    View and manage registered trekkers.
+                </p>
                 <a href="{{ url_for('admin_users') }}"
-                   class="btn btn-info btn-sm mt-1">Manage Users</a>
+                   class="btn btn-info btn-sm">
+                    Manage Users
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Bookings</h6>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0 h-100"
+             style="border-left: 4px solid #6c757d !important;">
+            <div class="card-body">
+                <h6 class="card-title fw-bold">Bookings</h6>
+                <p class="text-muted small mb-3">
+                    View all booking records and history.
+                </p>
                 <a href="{{ url_for('admin_bookings') }}"
-                   class="btn btn-secondary btn-sm mt-1">View Bookings</a>
+                   class="btn btn-secondary btn-sm">
+                    View Bookings
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Search</h6>
-                <a href="{{ url_for('admin_search') }}"
-                   class="btn btn-dark btn-sm mt-1">Search</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm border-0">
-            <div class="card-body text-center">
-                <h6>Account</h6>
-                <a href="{{ url_for('logout') }}"
-                   class="btn btn-danger btn-sm mt-1">Logout</a>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 {% endblock %}

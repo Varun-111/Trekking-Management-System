@@ -481,7 +481,7 @@ def staff_trek_detail(trek_id):
 @app.route('/staff/trek/<int:trek_id>/update', methods=['POST'])
 def staff_trek_update(trek_id):
     if session.get('role') != 'Trek Staff':
-        flash('Access denied.', 'Danger')
+        flash('Access denied.', 'danger')
         return redirect(url_for('login'))
     
     # Verifying the assignment again
@@ -495,10 +495,21 @@ def staff_trek_update(trek_id):
         return redirect(url_for('staff_dashboard'))
 
     trek = Trek.query.get(trek_id)
+    new_status = request.form['status']
 
     # Update slots and status from form
     trek.available_slots = int(request.form['available_slots'])
-    trek.status = request.form['status']
+    trek.status = new_status
+
+    # If staff marks trek as completed,
+    # auto-complete all active bookings for this trek
+    if new_status == 'Completed':
+        active_bookings = Booking.query.filter_by(
+            trek_id=trek_id,
+            status='Booked'
+        ).all()
+        for booking in active_bookings:
+            booking.status = 'Completed'
 
     db.session.commit()
     flash('Trek updated successfully.', 'success')
@@ -553,7 +564,7 @@ def trekker_dashboard():
 
     return render_template('trekker_dashboard.html', active_bookings=active_bookings, open_treks=open_treks)
 
-@app.route('/trekker/treks')
+@app.route('/trekker/treks', methods=['GET'])
 def trekker_treks():
     if session.get('role') != 'Trekker':
         flash('Access denied.', 'danger')

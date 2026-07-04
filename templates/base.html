@@ -24,6 +24,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_search') }}">Search</a>
+                            </li>
                             {% elif session.get('role') == 'Trek Staff' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('staff_dashboard') }}">Dashboard</a>
@@ -32,9 +35,6 @@
                                 <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>
                             </li>
                             {% elif session.get('role') == 'Trekker' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('trekker_dashboard') }}">Dashboard</a>
-                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('trekker_bookings') }}">My Bookings</a>
                             </li>
