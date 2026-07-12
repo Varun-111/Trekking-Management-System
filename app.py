@@ -96,6 +96,25 @@ def register():
 
     return render_template('register.html')
 
+# Dashboards
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if session.get('role') != 'Admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+    
+    # Count stats for the dashboard cards
+    total_treks = Trek.query.count()
+    total_users = User.query.filter_by(role='Trekker').count()
+    total_staff = User.query.filter_by(role='Trek Staff', is_approved=True).count()
+    total_bookings = Booking.query.count()
+
+    return render_template('admin_dashboard.html', 
+        total_treks = total_treks,  
+        total_users = total_users,
+        total_staff = total_staff,
+        total_bookings = total_bookings
+    )
 
 # Admin: View and Approve Pending Staff
 @app.route('/admin/pending-staff')
@@ -105,10 +124,9 @@ def pending_staff():
         return redirect(url_for('login'))
 
     # Fetch all staff accounts that are not yet approved
-    pending = User.query.filter_by(role='Trek Staff', is_approved=False).all()
+    pending = User.query.filter_by(role='Trek Staff', is_approved=False).all() 
 
     return render_template('pending_staff.html', pending=pending)
-
 
 @app.route('/admin/approve-staff/<int:user_id>')
 def approve_staff(user_id):
@@ -127,34 +145,6 @@ def approve_staff(user_id):
         flash('User not found.', 'danger')
 
     return redirect(url_for('pending_staff'))
-
-
-# Logout 
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
-
-# Dashboards
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    if session.get('role') != 'Admin':
-        flash('Access denied.', 'danger')
-        return redirect(url_for('login'))
-    
-    # Count stats for the dashboard cards
-    total_treks = Trek.query.count()
-    total_users = User.query.filter_by(role='Trekker').count()
-    total_staff = User.query.filter_by(role='Trek Staff', is_approved=True).count()
-    total_bookings = Booking.query.count()
-
-    return render_template('admin_dashboard.html', 
-        total_treks = total_treks,
-        total_users = total_users,
-        total_staff = total_staff,
-        total_bookings = total_bookings
-    )
 
 # Admin: View All Treks
 @app.route('/admin/treks')
@@ -677,6 +667,14 @@ def trekker_profile():
         return redirect(url_for('trekker_profile'))
 
     return render_template('trekker_profile.html', trekker=trekker)
+    
+# Logout 
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

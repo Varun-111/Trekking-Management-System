@@ -13,11 +13,11 @@ class User(db.Model):
     phone = db.Column(db.String(20))
     role = db.Column(db.String(50), nullable=False)
     is_blacklisted = db.Column(db.Boolean, default=False)
-    is_approved = db.Column(db.Boolean, default=False) # adding this for milestone 3
+    is_approved = db.Column(db.Boolean, default=False) 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     bookings = db.relationship('Booking', backref='user', lazy=True)
-    created_treks = db.relationship('Trek', backref='creator', lazy=True)
+    created_treks = db.relationship('Trek', backref='creator', lazy=True) 
 
 
 class Trek(db.Model):
