@@ -3,625 +3,108 @@ openapi: 3.0.0
 info:
   title: Trekking Management System - API
   description: >
-    Routes for the trekking management app. This is a server-rendered
-    Flask app so all routes return HTML pages, not JSON. Auth is handled
-    via Flask sessions. Three roles - Admin, Trek Staff, Trekker.
+    Server-rendered Flask app - routes return HTML, not JSON.
+    Auth via Flask sessions. Roles: Admin, Trek Staff, Trekker.
   version: 1.0.0
 
 servers:
   - url: http://127.0.0.1:5000
-    description: local dev server
-
-tags:
-  - name: public
-    description: no login needed
-  - name: admin
-    description: admin only
-  - name: staff
-    description: trek staff only
-  - name: trekker
-    description: trekker only
 
 paths:
 
+  # ---------- public ----------
   /:
-    get:
-      tags: [public]
-      summary: home page
-      responses:
-        '200':
-          description: renders index.html
+    get: { summary: "Home page [public]" }
 
   /login:
-    get:
-      tags: [public]
-      summary: show login form
-      responses:
-        '200':
-          description: renders login.html
-    post:
-      tags: [public]
-      summary: handle login
-      description: checks email, password, blacklist status, approval status. redirects to role dashboard on success.
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '302':
-          description: redirect to dashboard
-        '200':
-          description: back to login with error message
+    get: { summary: "Login form [public]" }
+    post: { summary: "Handle login - checks credentials, blacklist, approval [public]" }
 
   /register:
-    get:
-      tags: [public]
-      summary: show register form
-      responses:
-        '200':
-          description: renders register.html
-    post:
-      tags: [public]
-      summary: handle registration
-      description: >
-        Trekkers get approved immediately.
-        Trek Staff accounts need admin approval before they can login.
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
-                phone:
-                  type: string
-                password:
-                  type: string
-                role:
-                  type: string
-                  enum: [Trekker, Trek Staff]
-      responses:
-        '302':
-          description: redirect to login
+    get: { summary: "Register form [public]" }
+    post: { summary: "Handle registration - Trekker auto-approved, Trek Staff needs admin approval [public]" }
 
   /logout:
-    get:
-      tags: [public]
-      summary: clear session and logout
-      responses:
-        '302':
-          description: redirect to login
+    get: { summary: "Clear session, redirect to login [public]" }
 
-  # admin routes
-
+  # ---------- admin ----------
   /admin/dashboard:
-    get:
-      tags: [admin]
-      summary: admin dashboard with stats
-      description: shows total treks, trekkers, staff, bookings counts
-      responses:
-        '200':
-          description: renders admin_dashboard.html
-        '302':
-          description: redirect to login if not admin
+    get: { summary: "Stat cards: total treks, trekkers, staff, bookings [admin]" }
 
   /admin/treks:
-    get:
-      tags: [admin]
-      summary: list all treks
-      responses:
-        '200':
-          description: renders admin_treks.html
+    get: { summary: "List all treks [admin]" }
 
   /admin/treks/add:
-    get:
-      tags: [admin]
-      summary: show add trek form
-      responses:
-        '200':
-          description: renders admin_trek_add.html
-    post:
-      tags: [admin]
-      summary: create new trek
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                location:
-                  type: string
-                description:
-                  type: string
-                difficulty:
-                  type: string
-                  enum: [Easy, Moderate, Hard]
-                duration_days:
-                  type: integer
-                total_seats:
-                  type: integer
-                price:
-                  type: number
-                start_date:
-                  type: string
-                  format: date
-                end_date:
-                  type: string
-                  format: date
-      responses:
-        '302':
-          description: redirect to /admin/treks
+    get: { summary: "Add-trek form [admin]" }
+    post: { summary: "Create trek [admin]" }
 
   /admin/treks/edit/{trek_id}:
-    get:
-      tags: [admin]
-      summary: show edit form for a trek
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: renders admin_trek_edit.html pre-filled
-    post:
-      tags: [admin]
-      summary: save updated trek details
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                location:
-                  type: string
-                difficulty:
-                  type: string
-                  enum: [Easy, Moderate, Hard]
-                duration_days:
-                  type: integer
-                total_seats:
-                  type: integer
-                available_slots:
-                  type: integer
-                price:
-                  type: number
-                start_date:
-                  type: string
-                  format: date
-                end_date:
-                  type: string
-                  format: date
-                status:
-                  type: string
-                  enum: [Pending, Approved, Open, Closed, Completed]
-      responses:
-        '302':
-          description: redirect to /admin/treks
+    get: { summary: "Edit-trek form, pre-filled [admin]" }
+    post: { summary: "Save trek edits [admin]" }
 
   /admin/treks/delete/{trek_id}:
-    get:
-      tags: [admin]
-      summary: delete a trek
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /admin/treks
+    get: { summary: "Delete a trek [admin]" }
 
   /admin/staff:
-    get:
-      tags: [admin]
-      summary: view all staff and assign form
-      description: shows approved staff list and a form to assign staff to a trek
-      responses:
-        '200':
-          description: renders admin_staff.html
+    get: { summary: "List staff + assign-to-trek form [admin]" }
 
   /admin/staff/assign:
-    post:
-      tags: [admin]
-      summary: assign a staff member to a trek
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                staff_id:
-                  type: integer
-                trek_id:
-                  type: integer
-      responses:
-        '302':
-          description: redirect to /admin/staff
+    post: { summary: "Assign staff member to a trek [admin]" }
 
   /admin/staff/remove/{user_id}:
-    get:
-      tags: [admin]
-      summary: remove a staff member
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /admin/staff
+    get: { summary: "Unassign a staff member [admin]" }
 
   /admin/staff/blacklist/{user_id}:
-    get:
-      tags: [admin]
-      summary: toggle blacklist for a staff member
-      description: flips is_blacklisted between true and false. blacklisted staff cant login.
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /admin/staff
+    get: { summary: "Toggle blacklist for a staff member [admin]" }
 
   /admin/pending-staff:
-    get:
-      tags: [admin]
-      summary: view staff waiting for approval
-      responses:
-        '200':
-          description: renders pending_staff.html
+    get: { summary: "List staff awaiting approval [admin]" }
 
   /admin/approve-staff/{user_id}:
-    get:
-      tags: [admin]
-      summary: approve a pending staff account
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /admin/pending-staff
+    get: { summary: "Approve a pending staff account [admin]" }
 
   /admin/users:
-    get:
-      tags: [admin]
-      summary: view all trekkers
-      responses:
-        '200':
-          description: renders admin_users.html
+    get: { summary: "List all trekkers [admin]" }
 
   /admin/users/blacklist/{user_id}:
-    get:
-      tags: [admin]
-      summary: toggle blacklist for a trekker
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /admin/users
+    get: { summary: "Toggle blacklist for a trekker [admin]" }
 
   /admin/bookings:
-    get:
-      tags: [admin]
-      summary: view all booking records
-      responses:
-        '200':
-          description: renders admin_bookings.html
+    get: { summary: "View all bookings [admin]" }
 
   /admin/search:
-    get:
-      tags: [admin]
-      summary: search across treks, users, staff
-      parameters:
-        - name: q
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: renders admin_search.html with results
+    get: { summary: "Search treks/users/staff by name or ID [admin]" }
 
-  # staff routes
-
+  # ---------- staff ----------
   /staff/dashboard:
-    get:
-      tags: [staff]
-      summary: staff dashboard
-      description: shows treks assigned to this staff member with booking counts
-      responses:
-        '200':
-          description: renders staff_dashboard.html
-        '302':
-          description: redirect to login if not staff
+    get: { summary: "Assigned treks + booking counts [staff]" }
 
   /staff/trek/{trek_id}:
-    get:
-      tags: [staff]
-      summary: trek detail and participant list
-      description: only works if this staff is assigned to the trek
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: renders staff_trek_detail.html
-        '302':
-          description: redirect if not assigned to this trek
+    get: { summary: "Trek detail + registered trekkers (must be assigned) [staff]" }
 
   /staff/trek/{trek_id}/update:
-    post:
-      tags: [staff]
-      summary: update trek slots and status
-      description: >
-        if status is set to Completed, all Booked bookings for this trek
-        automatically become Completed as well
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                available_slots:
-                  type: integer
-                status:
-                  type: string
-                  enum: [Open, Closed, Completed]
-      responses:
-        '302':
-          description: redirect back to trek detail page
+    post: { summary: "Update slots/status - Completed cascades to bookings [staff]" }
 
   /staff/profile:
-    get:
-      tags: [staff]
-      summary: view profile page
-      responses:
-        '200':
-          description: renders staff_profile.html
-    post:
-      tags: [staff]
-      summary: update profile
-      description: updates name and phone. only updates password if new_password field is filled.
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                phone:
-                  type: string
-                new_password:
-                  type: string
-      responses:
-        '302':
-          description: redirect to /staff/profile
+    get: { summary: "View profile [staff]" }
+    post: { summary: "Update name/phone/password [staff]" }
 
-  # trekker routes
-
+  # ---------- trekker ----------
   /trekker/dashboard:
-    get:
-      tags: [trekker]
-      summary: trekker dashboard
-      description: shows open treks and the trekker's active bookings
-      responses:
-        '200':
-          description: renders trekker_dashboard.html
-        '302':
-          description: redirect to login if not trekker
+    get: { summary: "Open treks + this trekker's active bookings [trekker]" }
 
   /trekker/treks:
-    get:
-      tags: [trekker]
-      summary: browse open treks with filters
-      parameters:
-        - name: difficulty
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [Easy, Moderate, Hard]
-        - name: location
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: renders trekker_treks.html
+    get: { summary: "Browse/filter open treks by difficulty, location [trekker]" }
 
   /trekker/book/{trek_id}:
-    post:
-      tags: [trekker]
-      summary: book a trek
-      description: >
-        checks trek is Open, slots available, not already booked.
-        decrements available_slots by 1 on success.
-      parameters:
-        - name: trek_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to bookings on success, back to treks on failure
+    post: { summary: "Book a trek - checks Open, slots, not already booked [trekker]" }
 
   /trekker/cancel/{booking_id}:
-    post:
-      tags: [trekker]
-      summary: cancel a booking
-      description: sets status to Cancelled and adds the slot back to the trek
-      parameters:
-        - name: booking_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: redirect to /trekker/bookings
+    post: { summary: "Cancel a booking, restore the slot [trekker]" }
 
   /trekker/bookings:
-    get:
-      tags: [trekker]
-      summary: view booking history
-      responses:
-        '200':
-          description: renders trekker_bookings.html
+    get: { summary: "View booking history [trekker]" }
 
   /trekker/profile:
-    get:
-      tags: [trekker]
-      summary: view profile
-      responses:
-        '200':
-          description: renders trekker_profile.html
-    post:
-      tags: [trekker]
-      summary: update profile
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                phone:
-                  type: string
-                new_password:
-                  type: string
-      responses:
-        '302':
-          description: redirect to /trekker/profile
-
-components:
-  schemas:
-
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        username:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-        role:
-          type: string
-          enum: [Admin, Trek Staff, Trekker]
-        is_blacklisted:
-          type: boolean
-        is_approved:
-          type: boolean
-        created_at:
-          type: string
-
-    Trek:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        location:
-          type: string
-        difficulty:
-          type: string
-        duration_days:
-          type: integer
-        total_seats:
-          type: integer
-        available_slots:
-          type: integer
-        price:
-          type: number
-        start_date:
-          type: string
-        end_date:
-          type: string
-        status:
-          type: string
-        created_by:
-          type: integer
-
-    Booking:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        trek_id:
-          type: integer
-        booking_date:
-          type: string
-        status:
-          type: string
-          enum: [Booked, Cancelled, Completed]
-
-    TrekStaff:
-      type: object
-      properties:
-        id:
-          type: integer
-        trek_id:
-          type: integer
-        staff_id:
-          type: integer
-        assigned_at:
-          type: string
+    get: { summary: "View profile [trekker]" }
+    post: { summary: "Update name/phone/password [trekker]" }
