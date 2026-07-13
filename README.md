@@ -35,6 +35,8 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
+After cloning the repository, create a `.env` file and fill in the required values using the format from `.env.example` so the app can load its configuration correctly.
+
 Install the required packages:
 
 ```
